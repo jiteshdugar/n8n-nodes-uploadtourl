@@ -1,0 +1,18 @@
+{
+	"node": "n8n-nodes-uploadtourl.uploadToUrl",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Miscellaneous"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://uploadtourl.com"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://uploadtourl.com"
+			}
+		]
+	}
+}
