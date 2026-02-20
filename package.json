@@ -12,7 +12,8 @@
 		"image link"
 	],
 	"author": {
-		"name": "Upload to URL"
+		"name": "Upload to URL",
+		"email": "support@uploadtourl.com"
 	},
 	"homepage": "https://uploadtourl.com",
 	"bugs": {
