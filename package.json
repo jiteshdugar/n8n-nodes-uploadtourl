@@ -24,7 +24,7 @@
 	},
 	"license": "MIT",
 	"type": "commonjs",
-	"main": ".prettierrc.js",
+	"main": "dist/nodes/UploadToUrl/UploadToUrl.node.js",
 	"files": [
 		"dist"
 	],

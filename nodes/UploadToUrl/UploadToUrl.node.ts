@@ -29,6 +29,21 @@ export class UploadToUrl implements INodeType {
 		],
 		properties: [
 			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				options: [
+					{
+						name: 'Upload File',
+						value: 'upload',
+						description: 'Upload a file and get a public URL',
+						action: 'Upload a file',
+					},
+				],
+				default: 'upload',
+			},
+			{
 				displayName: 'Binary Property',
 				name: 'binaryPropertyName',
 				type: 'string',
