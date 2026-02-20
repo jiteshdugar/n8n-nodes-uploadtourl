@@ -2,18 +2,34 @@
 	"name": "n8n-nodes-uploadtourl",
 	"version": "0.1.0",
 	"description": "n8n node to upload any file and get a public URL instantly using Upload to URL",
-	"license": "MIT",
-	"homepage": "https://uploadtourl.com",
 	"keywords": [
-		"n8n-community-node-package"
+		"n8n-community-node-package",
+		"file hosting",
+		"upload to url",
+		"image to url",
+		"video to url",
+		"pdf url",
+		"image link"
 	],
 	"author": {
-		"name": "Jitesh Dugar"
+	  "name": "upload-to-url",
+	  "email": "support@uploadtourl.com"
+	},
+	"homepage": "https://uploadtourl.com",
+	"bugs": {
+		"url": "https://github.com/jiteshdugar/n8n-nodes-uploadtourl/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/jiteshdugar/n8n-nodes-uploadtourl.git"
+		"url": "git+https://github.com/jiteshdugar/n8n-nodes-uploadtourl.git"
 	},
+	"license": "MIT",
+	"author": "Jitesh Dugar",
+	"type": "commonjs",
+	"main": ".prettierrc.js",
+	"files": [
+		"dist"
+	],
 	"scripts": {
 		"build": "n8n-node build",
 		"build:watch": "tsc --watch",
@@ -23,9 +39,16 @@
 		"release": "n8n-node release",
 		"prepublishOnly": "n8n-node prerelease"
 	},
-	"files": [
-		"dist"
-	],
+	"devDependencies": {
+		"@n8n/node-cli": "*",
+		"eslint": "9.32.0",
+		"prettier": "3.6.2",
+		"release-it": "^19.0.4",
+		"typescript": "^5.9.2"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "*"
+	},
 	"n8n": {
 		"n8nNodesApiVersion": 1,
 		"strict": true,
@@ -35,15 +58,5 @@
 		"nodes": [
 			"dist/nodes/UploadToUrl/UploadToUrl.node.js"
 		]
-	},
-	"devDependencies": {
-		"@n8n/node-cli": "*",
-		"eslint": "9.32.0",
-		"prettier": "3.6.2",
-		"release-it": "^19.0.4",
-		"typescript": "5.9.2"
-	},
-	"peerDependencies": {
-		"n8n-workflow": "*"
 	}
 }
