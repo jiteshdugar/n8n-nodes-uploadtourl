@@ -13,8 +13,8 @@ export class UploadToUrl implements INodeType {
 		icon: { light: 'file:uploadtourl.svg', dark: 'file:uploadtourl.dark.svg' },
 		group: ['output'],
 		version: 1,
-		subtitle: 'Upload file to get a public URL',
-		description: 'Upload any file to get a public URL instantly',
+		subtitle: 'File Upload & Hosting — get a public URL instantly',
+		description: 'Upload files for instant hosting and receive a shareable public URL',
 		defaults: {
 			name: 'Upload to URL',
 		},
