@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-uploadtourl",
-	"version": "0.2.4",
+	"version": "0.2.5",
 	"description": "n8n node to upload any file and get a public URL instantly using Upload to URL",
 	"keywords": [
 		"n8n-community-node-package",
