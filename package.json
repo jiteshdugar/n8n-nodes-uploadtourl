@@ -11,7 +11,9 @@
 		"pdf url",
 		"image link"
 	],
-	"author": "Jitesh Dugar",
+	"author": {
+		"name": "Jitesh Dugar"
+	},
 	"homepage": "https://uploadtourl.com",
 	"bugs": {
 		"url": "https://github.com/jiteshdugar/n8n-nodes-uploadtourl/issues"
@@ -37,6 +39,7 @@
 	},
 	"devDependencies": {
 		"@n8n/node-cli": "*",
+		"@types/node": "^25.3.0",
 		"eslint": "9.32.0",
 		"prettier": "3.6.2",
 		"release-it": "^19.0.4",

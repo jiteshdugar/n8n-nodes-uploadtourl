@@ -50,23 +50,27 @@ export class UploadToUrl implements INodeType {
 				const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
 				const binaryDataBuffer = await this.helpers.getBinaryDataBuffer(i, binaryPropertyName);
 
+				const boundary = '----n8nFormBoundary' + Math.random().toString(36).substring(2);
+				const fileName = binaryData.fileName ?? 'file';
+				const contentType = binaryData.mimeType;
+
+				const header = Buffer.from(
+					`--${boundary}\r\n` +
+						`Content-Disposition: form-data; name="file"; filename="${fileName}"\r\n` +
+						`Content-Type: ${contentType}\r\n\r\n`,
+				);
+				const footer = Buffer.from(`\r\n--${boundary}--\r\n`);
+				const body = Buffer.concat([header, binaryDataBuffer, footer]);
+
 				const response = await this.helpers.httpRequestWithAuthentication.call(
 					this,
 					'uploadToUrlApi',
 					{
 						method: 'POST',
 						url: 'https://uploadtourl.com/api/upload',
-						body: {
-							file: {
-								value: binaryDataBuffer,
-								options: {
-									filename: binaryData.fileName ?? 'file',
-									contentType: binaryData.mimeType,
-								},
-							},
-						},
+						body,
 						headers: {
-							'Content-Type': 'multipart/form-data',
+							'Content-Type': `multipart/form-data; boundary=${boundary}`,
 						},
 					},
 				);
