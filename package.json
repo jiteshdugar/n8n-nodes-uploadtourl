@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-uploadtourl",
-	"version": "0.1.2",
+	"version": "0.2.0",
 	"description": "n8n node to upload any file and get a public URL instantly using Upload to URL",
 	"keywords": [
 		"n8n-community-node-package",
@@ -12,7 +12,7 @@
 		"image link"
 	],
 	"author": {
-		"name": "Jitesh Dugar"
+		"name": "Upload to URL"
 	},
 	"homepage": "https://uploadtourl.com",
 	"bugs": {
@@ -35,7 +35,7 @@
 		"lint": "n8n-node lint",
 		"lint:fix": "n8n-node lint --fix",
 		"release": "n8n-node release",
-		"prepublishOnly": "n8n-node prerelease"
+		"prepublishOnly": "npm run build"
 	},
 	"devDependencies": {
 		"@n8n/node-cli": "*",
