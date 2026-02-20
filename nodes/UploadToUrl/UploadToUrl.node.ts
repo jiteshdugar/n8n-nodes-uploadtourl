@@ -20,7 +20,7 @@ export class UploadToUrl implements INodeType {
 		},
 		inputs: [NodeConnectionTypes.Main],
 		outputs: [NodeConnectionTypes.Main],
-		usableAsTool: false,
+		usableAsTool: true,
 		credentials: [
 			{
 				name: 'uploadToUrlApi',
