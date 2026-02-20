@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-uploadtourl",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "n8n node to upload any file and get a public URL instantly using Upload to URL",
 	"keywords": [
 		"n8n-community-node-package",
@@ -11,10 +11,7 @@
 		"pdf url",
 		"image link"
 	],
-	"author": {
-	  "name": "upload-to-url",
-	  "email": "support@uploadtourl.com"
-	},
+	"author": "Jitesh Dugar",
 	"homepage": "https://uploadtourl.com",
 	"bugs": {
 		"url": "https://github.com/jiteshdugar/n8n-nodes-uploadtourl/issues"
@@ -24,7 +21,6 @@
 		"url": "git+https://github.com/jiteshdugar/n8n-nodes-uploadtourl.git"
 	},
 	"license": "MIT",
-	"author": "Jitesh Dugar",
 	"type": "commonjs",
 	"main": ".prettierrc.js",
 	"files": [
