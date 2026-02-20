@@ -1,0 +1,35 @@
+name: Publish npm Package
+
+on:
+  push:
+    tags:
+      - 'v*' 
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest 
+
+    # 1. THE MAGIC KEYS: This tells GitHub to request a temporary OIDC identity token
+    permissions:
+      id-token: write 
+      contents: read  
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' 
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the n8n node
+        run: npm run build
+
+      # 2. PUBLISH: Look ma, no tokens! npm will automatically detect the OIDC token.
+      - name: Publish to npm
+        run: npm publish --access public
