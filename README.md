@@ -47,8 +47,9 @@ The **Upload to URL** node supports the following operation:
 | **Input Type** | selection | `Binary Data` | Choose between "Binary Data" (from previous nodes) or "Base64 String" (direct base64 input) |
 | **Binary Property** | string | `data` | The name of the binary property containing the file to upload. Only shown when Input Type is "Binary Data". |
 | **Base64 Data** | string | - | Base64 encoded file data. Only shown when Input Type is "Base64 String". |
-| **Filename** | string | - | Name of the file (e.g., document.pdf, image.jpg). Required for base64 input. |
-| **MIME Type** | string | - | MIME type of the file (e.g., application/pdf, image/jpeg). Required for base64 input. |
+| **Filename** | string | `file.bin` | Name of the file (e.g., document.pdf, image.jpg). Required for base64 input. |
+| **MIME Type** | selection | `auto` | Choose from common MIME types or select "Custom" to specify your own. Also supports "Auto-detect from filename" to automatically determine the MIME type from the file extension. |
+| **Custom MIME Type** | string | - | Custom MIME type (e.g., application/vnd.ms-excel). Only shown when MIME Type is set to "Custom". |
 
 #### Output
 
@@ -108,9 +109,11 @@ The credential is automatically verified against the Upload to URL API when save
 3. Set **Input Type** to "Base64 String"
 4. Configure the following parameters:
    - **Base64 Data**: The base64 encoded string (with or without data URL prefix)
-   - **Filename**: The desired filename (e.g., `document.pdf`)
-   - **MIME Type**: The MIME type (e.g., `application/pdf`)
+   - **Filename**: The desired filename (defaults to `file.bin` if not specified)
+   - **MIME Type**: Choose from the dropdown (defaults to "Auto-detect from filename")
 5. Execute the workflow to upload the file and receive a public URL
+
+**Note**: With the default settings, you only need to provide the base64 data. The node will automatically use `file.bin` as the filename and detect the MIME type from the file extension if you change the filename to end with a proper extension (e.g., `image.jpg`).
 
 ### Base64 Input Examples
 
@@ -139,6 +142,21 @@ data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ...
 ```
 
 Simply paste the entire data URL in the **Base64 Data** field, and the node will extract the base64 portion automatically.
+
+#### MIME Type Options
+
+The **MIME Type** dropdown provides several options:
+
+- **Auto-detect from filename**: Automatically determines the MIME type based on the file extension (e.g., `.jpg` → `image/jpeg`, `.pdf` → `application/pdf`)
+- **Predefined options**: Common MIME types for images, documents, videos, audio, and archives
+- **Custom**: Allows you to specify any MIME type (e.g., `application/vnd.ms-excel` for Excel files)
+
+**Supported Auto-detect Extensions**:
+- Images: `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.svg`
+- Documents: `.pdf`, `.txt`, `.csv`, `.json`, `.xml`
+- Archives: `.zip`
+- Media: `.mp4`, `.mp3`
+- Unknown extensions default to `application/octet-stream`
 
 ### Example Workflow
 

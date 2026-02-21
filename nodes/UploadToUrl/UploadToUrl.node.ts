@@ -79,6 +79,7 @@ export class UploadToUrl implements INodeType {
 				displayName: 'Base64 Data',
 				name: 'base64Data',
 				type: 'string',
+				default: '',
 				displayOptions: {
 					show: {
 						inputType: ['base64'],
@@ -91,6 +92,7 @@ export class UploadToUrl implements INodeType {
 				displayName: 'Filename',
 				name: 'fileName',
 				type: 'string',
+				default: 'file.bin',
 				displayOptions: {
 					show: {
 						inputType: ['base64'],
@@ -102,14 +104,93 @@ export class UploadToUrl implements INodeType {
 			{
 				displayName: 'MIME Type',
 				name: 'mimeType',
-				type: 'string',
+				type: 'options',
+				default: 'auto',
 				displayOptions: {
 					show: {
 						inputType: ['base64'],
 					},
 				},
+				options: [
+					{
+						name: 'Auto-detect from filename',
+						value: 'auto',
+						description: 'Automatically detect MIME type from file extension',
+					},
+					{
+						name: 'JPEG Image',
+						value: 'image/jpeg',
+					},
+					{
+						name: 'PNG Image',
+						value: 'image/png',
+					},
+					{
+						name: 'GIF Image',
+						value: 'image/gif',
+					},
+					{
+						name: 'WebP Image',
+						value: 'image/webp',
+					},
+					{
+						name: 'SVG Image',
+						value: 'image/svg+xml',
+					},
+					{
+						name: 'PDF Document',
+						value: 'application/pdf',
+					},
+					{
+						name: 'Text File',
+						value: 'text/plain',
+					},
+					{
+						name: 'CSV File',
+						value: 'text/csv',
+					},
+					{
+						name: 'JSON File',
+						value: 'application/json',
+					},
+					{
+						name: 'XML File',
+						value: 'application/xml',
+					},
+					{
+						name: 'ZIP Archive',
+						value: 'application/zip',
+					},
+					{
+						name: 'MP4 Video',
+						value: 'video/mp4',
+					},
+					{
+						name: 'MP3 Audio',
+						value: 'audio/mpeg',
+					},
+					{
+						name: 'Custom',
+						value: 'custom',
+						description: 'Specify a custom MIME type',
+					},
+				],
 				required: true,
-				description: 'MIME type of the file (e.g., application/pdf, image/jpeg)',
+				description: 'MIME type of the file',
+			},
+			{
+				displayName: 'Custom MIME Type',
+				name: 'customMimeType',
+				type: 'string',
+				default: '',
+				displayOptions: {
+					show: {
+						inputType: ['base64'],
+						mimeType: ['custom'],
+					},
+				},
+				required: true,
+				description: 'Enter a custom MIME type (e.g., application/vnd.ms-excel)',
 			},
 		],
 	};
@@ -136,7 +217,36 @@ export class UploadToUrl implements INodeType {
 					// Handle base64 input
 					const base64Data = this.getNodeParameter('base64Data', i) as string;
 					fileName = this.getNodeParameter('fileName', i) as string;
-					contentType = this.getNodeParameter('mimeType', i) as string;
+					let mimeTypeValue = this.getNodeParameter('mimeType', i) as string;
+
+					// Handle MIME type selection
+					if (mimeTypeValue === 'auto') {
+						// Auto-detect MIME type from file extension
+						const ext = fileName.split('.').pop()?.toLowerCase();
+						const mimeMap: { [key: string]: string } = {
+							'jpg': 'image/jpeg',
+							'jpeg': 'image/jpeg',
+							'png': 'image/png',
+							'gif': 'image/gif',
+							'webp': 'image/webp',
+							'svg': 'image/svg+xml',
+							'pdf': 'application/pdf',
+							'txt': 'text/plain',
+							'csv': 'text/csv',
+							'json': 'application/json',
+							'xml': 'application/xml',
+							'zip': 'application/zip',
+							'mp4': 'video/mp4',
+							'mp3': 'audio/mpeg',
+						};
+						contentType = mimeMap[ext || ''] || 'application/octet-stream';
+					} else if (mimeTypeValue === 'custom') {
+						// Use custom MIME type
+						contentType = this.getNodeParameter('customMimeType', i) as string;
+					} else {
+						// Use selected MIME type
+						contentType = mimeTypeValue;
+					}
 
 					// Clean base64 string (remove data URL prefix if present)
 					const cleanBase64 = base64Data.replace(/^data:[^;]+;base64,/, '');
