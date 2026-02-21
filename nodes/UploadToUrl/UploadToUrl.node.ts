@@ -13,7 +13,7 @@ export class UploadToUrl implements INodeType {
 		icon: { light: 'file:upload-to-url.png', dark: 'file:upload-to-url.png' },
 		group: ['output'],
 		version: 1,
-		subtitle: 'File Upload & Hosting — get a public URL instantly',
+		subtitle: 'File Upload & Hosting',
 		description: 'Upload files for instant hosting and receive a shareable public URL',
 		defaults: {
 			name: 'Upload to URL',
@@ -37,19 +37,79 @@ export class UploadToUrl implements INodeType {
 					{
 						name: 'Upload File',
 						value: 'upload',
-						description: 'Upload a file and get a public URL',
-						action: 'Upload a file',
+						description: 'Upload a file (binary data or base64) and get a public URL',
+						action: 'Upload a File',
 					},
 				],
 				default: 'upload',
+			},
+			{
+				displayName: 'Input Type',
+				name: 'inputType',
+				type: 'options',
+				noDataExpression: true,
+				options: [
+					{
+						name: 'Binary Data',
+						value: 'binary',
+						description: 'Use binary data from previous nodes',
+					},
+					{
+						name: 'Base64 String',
+						value: 'base64',
+						description: 'Use base64 encoded string',
+					},
+				],
+				default: 'binary',
 			},
 			{
 				displayName: 'Binary Property',
 				name: 'binaryPropertyName',
 				type: 'string',
 				default: 'data',
+				displayOptions: {
+					show: {
+						inputType: ['binary'],
+					},
+				},
 				required: true,
 				description: 'Name of the binary property containing the file to upload',
+			},
+			{
+				displayName: 'Base64 Data',
+				name: 'base64Data',
+				type: 'string',
+				displayOptions: {
+					show: {
+						inputType: ['base64'],
+					},
+				},
+				required: true,
+				description: 'Base64 encoded file data',
+			},
+			{
+				displayName: 'Filename',
+				name: 'fileName',
+				type: 'string',
+				displayOptions: {
+					show: {
+						inputType: ['base64'],
+					},
+				},
+				required: true,
+				description: 'Name of the file (e.g., document.pdf, image.jpg)',
+			},
+			{
+				displayName: 'MIME Type',
+				name: 'mimeType',
+				type: 'string',
+				displayOptions: {
+					show: {
+						inputType: ['base64'],
+					},
+				},
+				required: true,
+				description: 'MIME type of the file (e.g., application/pdf, image/jpeg)',
 			},
 		],
 	};
@@ -60,15 +120,32 @@ export class UploadToUrl implements INodeType {
 
 		for (let i = 0; i < items.length; i++) {
 			try {
-				const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
+				const inputType = this.getNodeParameter('inputType', i) as string;
+				let binaryDataBuffer: Buffer;
+				let fileName: string;
+				let contentType: string;
 
-				const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
-				const binaryDataBuffer = await this.helpers.getBinaryDataBuffer(i, binaryPropertyName);
+				if (inputType === 'binary') {
+					// Handle binary data input
+					const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
+					const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
+					binaryDataBuffer = await this.helpers.getBinaryDataBuffer(i, binaryPropertyName);
+					fileName = binaryData.fileName ?? 'file';
+					contentType = binaryData.mimeType;
+				} else {
+					// Handle base64 input
+					const base64Data = this.getNodeParameter('base64Data', i) as string;
+					fileName = this.getNodeParameter('fileName', i) as string;
+					contentType = this.getNodeParameter('mimeType', i) as string;
+
+					// Clean base64 string (remove data URL prefix if present)
+					const cleanBase64 = base64Data.replace(/^data:[^;]+;base64,/, '');
+					
+					// Convert base64 to buffer
+					binaryDataBuffer = Buffer.from(cleanBase64, 'base64');
+				}
 
 				const boundary = '----n8nFormBoundary' + Math.random().toString(36).substring(2);
-				const fileName = binaryData.fileName ?? 'file';
-				const contentType = binaryData.mimeType;
-
 				const header = Buffer.from(
 					`--${boundary}\r\n` +
 						`Content-Disposition: form-data; name="file"; filename="${fileName}"\r\n` +
