@@ -10,7 +10,7 @@ export class UploadToUrl implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Upload to URL',
 		name: 'uploadToUrl',
-		icon: { light: 'file:uploadtourl.svg', dark: 'file:uploadtourl.dark.svg' },
+		icon: { light: 'file:upload-to-url.png', dark: 'file:upload-to-url.png' },
 		group: ['output'],
 		version: 1,
 		subtitle: 'File Upload & Hosting — get a public URL instantly',
