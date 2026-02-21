@@ -1,6 +1,6 @@
 # n8n-nodes-uploadtourl
 
-This is an [n8n](https://n8n.io/) community node that lets you upload any file and get a public URL instantly using [Upload to URL](https://uploadtourl.com).
+This is an [n8n](https://n8n.io/) community node that lets you upload any file and get a public URL instantly using [Upload to URL](https://uploadtourl.com). Supports both binary data and base64 string inputs.
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
 
@@ -38,13 +38,17 @@ Then restart your n8n instance.
 
 The **Upload to URL** node supports the following operation:
 
-- **Upload File** — Upload a binary file from your workflow and receive a publicly accessible URL in response.
+- **Upload File** — Upload a file (binary data or base64 string) from your workflow and receive a publicly accessible URL in response.
 
 #### Parameters
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| **Binary Property** | string | `data` | The name of the binary property containing the file to upload. This corresponds to the binary data attached to the input item from a previous node (e.g., Read Binary File, HTTP Request, etc.). |
+| **Input Type** | selection | `Binary Data` | Choose between "Binary Data" (from previous nodes) or "Base64 String" (direct base64 input) |
+| **Binary Property** | string | `data` | The name of the binary property containing the file to upload. Only shown when Input Type is "Binary Data". |
+| **Base64 Data** | string | - | Base64 encoded file data. Only shown when Input Type is "Base64 String". |
+| **Filename** | string | - | Name of the file (e.g., document.pdf, image.jpg). Required for base64 input. |
+| **MIME Type** | string | - | MIME type of the file (e.g., application/pdf, image/jpeg). Required for base64 input. |
 
 #### Output
 
@@ -52,9 +56,20 @@ The node returns the JSON response from the Upload to URL API, which includes th
 
 ### Supported Features
 
-- **Batch Processing** — Handles multiple input items; each item's binary file is uploaded individually.
+- **Multiple Input Types** — Supports both binary data from previous nodes and direct base64 string input.
+- **Batch Processing** — Handles multiple input items; each item's file is uploaded individually.
 - **Continue on Fail** — When enabled, the workflow continues even if an upload fails, returning the error message in the output instead of stopping execution.
 - **Usable as Sub-Node / Tool** — Can be used as a tool in AI agent workflows and sub-workflows.
+
+#### Supported File Types
+
+The node supports all file types including:
+- **Images**: JPEG, PNG, GIF, WebP, SVG, ICO
+- **Documents**: PDF, DOC, DOCX, TXT, CSV, XLS, XLSX
+- **Videos**: MP4, AVI, MOV, WMV, FLV, WebM
+- **Audio**: MP3, WAV, FLAC, AAC, OGG
+- **Archives**: ZIP, RAR, TAR, GZ
+- **Any custom file type**
 
 ## Credentials
 
@@ -78,12 +93,52 @@ The credential is automatically verified against the Upload to URL API when save
 
 ## Usage
 
-### Basic File Upload
+### Binary Data Upload (Existing)
 
 1. Add a node that produces binary data (e.g., **Read Binary File**, **HTTP Request**, or a **Webhook** trigger with file upload)
 2. Connect it to the **Upload to URL** node
-3. Configure the **Binary Property** name if your binary data uses a property name other than `data`
-4. Execute the workflow to upload the file and receive a public URL
+3. Set **Input Type** to "Binary Data"
+4. Configure the **Binary Property** name if your binary data uses a property name other than `data`
+5. Execute the workflow to upload the file and receive a public URL
+
+### Base64 String Upload (New)
+
+1. Add a node that produces base64 data or use a **Set** node to define base64 content
+2. Connect it to the **Upload to URL** node
+3. Set **Input Type** to "Base64 String"
+4. Configure the following parameters:
+   - **Base64 Data**: The base64 encoded string (with or without data URL prefix)
+   - **Filename**: The desired filename (e.g., `document.pdf`)
+   - **MIME Type**: The MIME type (e.g., `application/pdf`)
+5. Execute the workflow to upload the file and receive a public URL
+
+### Base64 Input Examples
+
+#### Example 1: Direct Base64 Input
+```
+[Set Node with base64 data] → [Upload to URL] → [HTTP Request with URL]
+```
+
+**Set Node configuration:**
+- JSON mode: `{
+  "base64Data": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJ...",
+  "fileName": "image.png",
+  "mimeType": "image/png"
+}`
+
+**Upload to URL configuration:**
+- Input Type: "Base64 String"
+- Base64 Data: `{{ $json.base64Data }}`
+- Filename: `{{ $json.fileName }}`
+- MIME Type: `{{ $json.mimeType }}`
+
+#### Example 2: Data URL Input
+The node automatically handles data URLs like:
+```
+data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ...
+```
+
+Simply paste the entire data URL in the **Base64 Data** field, and the node will extract the base64 portion automatically.
 
 ### Example Workflow
 
