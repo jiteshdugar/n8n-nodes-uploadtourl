@@ -1,5 +1,7 @@
 # n8n-nodes-uploadtourl
 
+[![Hero Banner](images/hero-banner.png)](https://uploadtourl.com)
+
 This is an [n8n](https://n8n.io/) community node that lets you upload any file and get a public URL instantly using [Upload to URL](https://uploadtourl.com). Supports both binary data and base64 string inputs.
 
 [n8n](https://n8n.io/) is a [fair-code licensed](https://docs.n8n.io/reference/license/) workflow automation platform.
@@ -57,7 +59,10 @@ The node returns the JSON response from the Upload to URL API, which includes th
 
 ### Supported Features
 
+![Node Demo](images/node-demo.png)
+
 - **Multiple Input Types** — Supports both binary data from previous nodes and direct base64 string input.
+- **Smart Defaults** — Filename defaults to `file.bin` and MIME type defaults to auto-detection for seamless setup.
 - **Batch Processing** — Handles multiple input items; each item's file is uploaded individually.
 - **Continue on Fail** — When enabled, the workflow continues even if an upload fails, returning the error message in the output instead of stopping execution.
 - **Usable as Sub-Node / Tool** — Can be used as a tool in AI agent workflows and sub-workflows.
@@ -93,6 +98,12 @@ To use this node, you need an **Upload to URL API key**.
 The credential is automatically verified against the Upload to URL API when saved.
 
 ## Usage
+
+### Node Overview
+
+The **Upload to URL** node provides a clean interface for uploading files with support for both binary data and base64 string inputs.
+
+![Node Details](images/node-details.png)
 
 ### Binary Data Upload (Existing)
 
