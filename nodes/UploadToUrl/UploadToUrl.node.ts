@@ -415,8 +415,13 @@ export class UploadToUrl implements INodeType {
 							`Content-Disposition: form-data; name="expiry_days"\r\n\r\n` +
 							`${expiryDaysValue}`,
 					);
+					const sourcePart = Buffer.from(
+						`\r\n--${boundary}\r\n` +
+							`Content-Disposition: form-data; name="source"\r\n\r\n` +
+							`n8n`,
+					);
 					const footer = Buffer.from(`\r\n--${boundary}--\r\n`);
-					const body = Buffer.concat([filePart, binaryDataBuffer, expiryPart, footer]);
+					const body = Buffer.concat([filePart, binaryDataBuffer, expiryPart, sourcePart, footer]);
 
 					const response = await this.helpers.httpRequestWithAuthentication.call(
 						this,
