@@ -13,7 +13,7 @@ export class UploadToUrl implements INodeType {
 		icon: 'file:upload-to-url.svg',
 		group: ['output'],
 		version: 1,
-		subtitle: 'Upload files for instant hosting and receive a shareable public URL. Delete anytime',
+		subtitle: '={{$parameter["operation"].charAt(0).toUpperCase() + $parameter["operation"].slice(1) + " File"}}',
 		description: 'Upload files for instant hosting and receive a shareable public URL. Delete anytime',
 		defaults: {
 			name: 'Upload to URL',
