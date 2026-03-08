@@ -55,7 +55,7 @@ export class UploadToUrl implements INodeType {
 				],
 				default: 'upload',
 			},
-			// ---- File ID for Retrieve and Delete ----
+			// ---- File ID for Retrieve ----
 			{
 				displayName: 'File ID',
 				name: 'fileId',
@@ -64,10 +64,24 @@ export class UploadToUrl implements INodeType {
 				required: true,
 				displayOptions: {
 					show: {
-						operation: ['retrieve', 'delete'],
+						operation: ['retrieve'],
 					},
 				},
-				description: 'The ID of the file to retrieve or delete',
+				description: 'The ID of the file to retrieve',
+			},
+			// ---- File ID for Delete ----
+			{
+				displayName: 'File ID',
+				name: 'fileId',
+				type: 'string',
+				default: '',
+				required: true,
+				displayOptions: {
+					show: {
+						operation: ['delete'],
+					},
+				},
+				description: 'The ID of the file to delete',
 			},
 			// ---- Upload-specific parameters ----
 			{
