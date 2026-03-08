@@ -13,8 +13,8 @@ export class UploadToUrl implements INodeType {
 		icon: 'file:upload-to-url.svg',
 		group: ['output'],
 		version: 1,
-		subtitle: 'File Upload & Hosting',
-		description: 'Upload files for instant hosting and receive a shareable public URL',
+		subtitle: 'Upload files for instant hosting and receive a shareable public URL. Delete anytime',
+		description: 'Upload files for instant hosting and receive a shareable public URL. Delete anytime',
 		defaults: {
 			name: 'Upload to URL',
 		},
@@ -40,9 +40,36 @@ export class UploadToUrl implements INodeType {
 						description: 'Upload a file (binary data or base64) and get a public URL',
 						action: 'Upload a file',
 					},
+					{
+						name: 'Retrieve File',
+						value: 'retrieve',
+						description: 'Retrieve file information by file ID',
+						action: 'Retrieve a file',
+					},
+					{
+						name: 'Delete File',
+						value: 'delete',
+						description: 'Delete a file by file ID',
+						action: 'Delete a file',
+					},
 				],
 				default: 'upload',
 			},
+			// ---- File ID for Retrieve and Delete ----
+			{
+				displayName: 'File ID',
+				name: 'fileId',
+				type: 'string',
+				default: '',
+				required: true,
+				displayOptions: {
+					show: {
+						operation: ['retrieve', 'delete'],
+					},
+				},
+				description: 'The ID of the file to retrieve or delete',
+			},
+			// ---- Upload-specific parameters ----
 			{
 				displayName: 'Input Type',
 				name: 'inputType',
@@ -61,6 +88,11 @@ export class UploadToUrl implements INodeType {
 					},
 				],
 				default: 'binary',
+				displayOptions: {
+					show: {
+						operation: ['upload'],
+					},
+				},
 			},
 			{
 				displayName: 'Binary Property',
@@ -69,6 +101,7 @@ export class UploadToUrl implements INodeType {
 				default: 'data',
 				displayOptions: {
 					show: {
+						operation: ['upload'],
 						inputType: ['binary'],
 					},
 				},
@@ -82,6 +115,7 @@ export class UploadToUrl implements INodeType {
 				default: '',
 				displayOptions: {
 					show: {
+						operation: ['upload'],
 						inputType: ['base64'],
 					},
 				},
@@ -95,6 +129,7 @@ export class UploadToUrl implements INodeType {
 				default: 'file.bin',
 				displayOptions: {
 					show: {
+						operation: ['upload'],
 						inputType: ['base64'],
 					},
 				},
@@ -108,6 +143,7 @@ export class UploadToUrl implements INodeType {
 				default: 'auto',
 				displayOptions: {
 					show: {
+						operation: ['upload'],
 						inputType: ['base64'],
 					},
 				},
@@ -185,12 +221,82 @@ export class UploadToUrl implements INodeType {
 				default: '',
 				displayOptions: {
 					show: {
+						operation: ['upload'],
 						inputType: ['base64'],
 						mimeType: ['custom'],
 					},
 				},
 				required: true,
 				description: 'Enter a custom MIME type (e.g., application/vnd.ms-excel)',
+			},
+			// ---- Additional Options (for Upload) ----
+			{
+				displayName: 'Additional Options',
+				name: 'additionalOptions',
+				type: 'collection',
+				placeholder: 'Add Option',
+				default: {},
+				displayOptions: {
+					show: {
+						operation: ['upload'],
+					},
+				},
+				options: [
+					{
+						displayName: 'Expiry',
+						name: 'expiryType',
+						type: 'options',
+						default: '7',
+						description: 'How long the file should be available on the server',
+						options: [
+							{
+								name: '1 Day',
+								value: '1',
+								description: 'File expires after 1 day',
+							},
+							{
+								name: '7 Days',
+								value: '7',
+								description: 'File expires after 7 days',
+							},
+							{
+								name: '15 Days',
+								value: '15',
+								description: 'File expires after 15 days',
+							},
+							{
+								name: '30 Days',
+								value: '30',
+								description: 'File expires after 30 days',
+							},
+							{
+								name: 'Never',
+								value: 'never',
+								description: 'File will never expire',
+							},
+							{
+								name: 'Custom',
+								value: 'custom',
+								description: 'Set a custom number of days before the file expires',
+							},
+						],
+					},
+					{
+						displayName: 'Number of Days to Expiry',
+						name: 'expiryDays',
+						type: 'number',
+						default: 30,
+						typeOptions: {
+							minValue: 1,
+						},
+						description: 'Number of days the file should remain available',
+						displayOptions: {
+							show: {
+								expiryType: ['custom'],
+							},
+						},
+					},
+				],
 			},
 		],
 	};
@@ -201,86 +307,134 @@ export class UploadToUrl implements INodeType {
 
 		for (let i = 0; i < items.length; i++) {
 			try {
-				const inputType = this.getNodeParameter('inputType', i) as string;
-				let binaryDataBuffer: Buffer;
-				let fileName: string;
-				let contentType: string;
+				const operation = this.getNodeParameter('operation', i) as string;
 
-				if (inputType === 'binary') {
-					// Handle binary data input
-					const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
-					const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
-					binaryDataBuffer = await this.helpers.getBinaryDataBuffer(i, binaryPropertyName);
-					fileName = binaryData.fileName ?? 'file';
-					contentType = binaryData.mimeType;
+				if (operation === 'retrieve') {
+					const fileId = this.getNodeParameter('fileId', i) as string;
+					const response = await this.helpers.httpRequestWithAuthentication.call(
+						this,
+						'uploadToUrlApi',
+						{
+							method: 'GET',
+							url: `https://uploadtourl.com/api/file/${fileId}`,
+						},
+					);
+					returnData.push({
+						json: typeof response === 'string' ? JSON.parse(response) : response,
+						pairedItem: i,
+					});
+				} else if (operation === 'delete') {
+					const fileId = this.getNodeParameter('fileId', i) as string;
+					const response = await this.helpers.httpRequestWithAuthentication.call(
+						this,
+						'uploadToUrlApi',
+						{
+							method: 'DELETE',
+							url: `https://uploadtourl.com/api/file/${fileId}`,
+						},
+					);
+					returnData.push({
+						json: typeof response === 'string' ? JSON.parse(response) : response,
+						pairedItem: i,
+					});
 				} else {
-					// Handle base64 input
-					const base64Data = this.getNodeParameter('base64Data', i) as string;
-					fileName = this.getNodeParameter('fileName', i) as string;
-					const mimeTypeValue = this.getNodeParameter('mimeType', i) as string;
+					// Upload operation
+					const inputType = this.getNodeParameter('inputType', i) as string;
+					let binaryDataBuffer: Buffer;
+					let fileName: string;
+					let contentType: string;
 
-					// Handle MIME type selection
-					if (mimeTypeValue === 'auto') {
-						// Auto-detect MIME type from file extension
-						const ext = fileName.split('.').pop()?.toLowerCase();
-						const mimeMap: { [key: string]: string } = {
-							'jpg': 'image/jpeg',
-							'jpeg': 'image/jpeg',
-							'png': 'image/png',
-							'gif': 'image/gif',
-							'webp': 'image/webp',
-							'svg': 'image/svg+xml',
-							'pdf': 'application/pdf',
-							'txt': 'text/plain',
-							'csv': 'text/csv',
-							'json': 'application/json',
-							'xml': 'application/xml',
-							'zip': 'application/zip',
-							'mp4': 'video/mp4',
-							'mp3': 'audio/mpeg',
-						};
-						contentType = mimeMap[ext || ''] || 'application/octet-stream';
-					} else if (mimeTypeValue === 'custom') {
-						// Use custom MIME type
-						contentType = this.getNodeParameter('customMimeType', i) as string;
+					if (inputType === 'binary') {
+						const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
+						const binaryData = this.helpers.assertBinaryData(i, binaryPropertyName);
+						binaryDataBuffer = await this.helpers.getBinaryDataBuffer(i, binaryPropertyName);
+						fileName = binaryData.fileName ?? 'file';
+						contentType = binaryData.mimeType;
 					} else {
-						// Use selected MIME type
-						contentType = mimeTypeValue;
+						const base64Data = this.getNodeParameter('base64Data', i) as string;
+						fileName = this.getNodeParameter('fileName', i) as string;
+						const mimeTypeValue = this.getNodeParameter('mimeType', i) as string;
+
+						if (mimeTypeValue === 'auto') {
+							const ext = fileName.split('.').pop()?.toLowerCase();
+							const mimeMap: { [key: string]: string } = {
+								'jpg': 'image/jpeg',
+								'jpeg': 'image/jpeg',
+								'png': 'image/png',
+								'gif': 'image/gif',
+								'webp': 'image/webp',
+								'svg': 'image/svg+xml',
+								'pdf': 'application/pdf',
+								'txt': 'text/plain',
+								'csv': 'text/csv',
+								'json': 'application/json',
+								'xml': 'application/xml',
+								'zip': 'application/zip',
+								'mp4': 'video/mp4',
+								'mp3': 'audio/mpeg',
+							};
+							contentType = mimeMap[ext || ''] || 'application/octet-stream';
+						} else if (mimeTypeValue === 'custom') {
+							contentType = this.getNodeParameter('customMimeType', i) as string;
+						} else {
+							contentType = mimeTypeValue;
+						}
+
+						const cleanBase64 = base64Data.replace(/^data:[^;]+;base64,/, '');
+						binaryDataBuffer = Buffer.from(cleanBase64, 'base64');
 					}
 
-					// Clean base64 string (remove data URL prefix if present)
-					const cleanBase64 = base64Data.replace(/^data:[^;]+;base64,/, '');
-					
-					// Convert base64 to buffer
-					binaryDataBuffer = Buffer.from(cleanBase64, 'base64');
-				}
+					// Determine expiry_days value from additional options
+					const additionalOptions = this.getNodeParameter('additionalOptions', i, {}) as {
+						expiryType?: string;
+						expiryDays?: number;
+					};
+					let expiryDaysValue: string | number = 'never';
+					if (additionalOptions.expiryType !== undefined) {
+						if (additionalOptions.expiryType === 'never') {
+							expiryDaysValue = 'never';
+						} else if (additionalOptions.expiryType === 'custom') {
+							expiryDaysValue = additionalOptions.expiryDays ?? 30;
+						} else {
+							// Preset values: '1', '7', '15', '30'
+							expiryDaysValue = parseInt(additionalOptions.expiryType, 10);
+						}
+					}
 
-				const boundary = '----n8nFormBoundary' + Math.random().toString(36).substring(2);
-				const header = Buffer.from(
-					`--${boundary}\r\n` +
-						`Content-Disposition: form-data; name="file"; filename="${fileName}"\r\n` +
-						`Content-Type: ${contentType}\r\n\r\n`,
-				);
-				const footer = Buffer.from(`\r\n--${boundary}--\r\n`);
-				const body = Buffer.concat([header, binaryDataBuffer, footer]);
+					const boundary = '----n8nFormBoundary' + Math.random().toString(36).substring(2);
 
-				const response = await this.helpers.httpRequestWithAuthentication.call(
-					this,
-					'uploadToUrlApi',
-					{
-						method: 'POST',
-						url: 'https://uploadtourl.com/api/upload',
-						body,
-						headers: {
-							'Content-Type': `multipart/form-data; boundary=${boundary}`,
+					// Build multipart body with file and expiry_days
+					const filePart = Buffer.from(
+						`--${boundary}\r\n` +
+							`Content-Disposition: form-data; name="file"; filename="${fileName}"\r\n` +
+							`Content-Type: ${contentType}\r\n\r\n`,
+					);
+					const expiryPart = Buffer.from(
+						`\r\n--${boundary}\r\n` +
+							`Content-Disposition: form-data; name="expiry_days"\r\n\r\n` +
+							`${expiryDaysValue}`,
+					);
+					const footer = Buffer.from(`\r\n--${boundary}--\r\n`);
+					const body = Buffer.concat([filePart, binaryDataBuffer, expiryPart, footer]);
+
+					const response = await this.helpers.httpRequestWithAuthentication.call(
+						this,
+						'uploadToUrlApi',
+						{
+							method: 'POST',
+							url: 'https://uploadtourl.com/api/upload',
+							body,
+							headers: {
+								'Content-Type': `multipart/form-data; boundary=${boundary}`,
+							},
 						},
-					},
-				);
+					);
 
-				returnData.push({
-					json: typeof response === 'string' ? JSON.parse(response) : response,
-					pairedItem: i,
-				});
+					returnData.push({
+						json: typeof response === 'string' ? JSON.parse(response) : response,
+						pairedItem: i,
+					});
+				}
 			} catch (error) {
 				if (this.continueOnFail()) {
 					returnData.push({
